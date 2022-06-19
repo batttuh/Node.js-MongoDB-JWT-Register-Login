@@ -1,7 +1,8 @@
 const User=require("../model/user");
 const bcrypt=require("bcryptjs");
 const path=require("path");
-
+const jwt=require("jsonwebtoken");
+const JWT_SECRET="asa£>21ı@asdsaçdieqw<421";
 exports.regForm=(req,res,next)=>{
     res.sendFile(path.join(__dirname,"..","views","index.html"));
 }
@@ -38,5 +39,33 @@ exports.postForm=async (req,res)=>{
     
 }
 exports.getForm=async (req,res)=>{
-    res.render("login");
+    const {username,password}=req.body;
+
+    const user=await User.findOne({username}).lean();
+    if(!user){
+        return res.json({status:"error",error:"Invalid username"});
+    }
+    if(await bcrypt.compare(password,user.password)){
+        const token=jwt.sign({id:user._id,username:user.username},JWT_SECRET);
+        return res.json({status:"ok",data:token});
+    }
+}
+exports.change=async (req,res)=>{
+    const {token,newpassword:plainTextPassword}=req.body;
+    try{
+        const user=jwt.verify(token,JWT_SECRET);
+        const _id=user.id;
+        const password=await bcrypt.hash(plainTextPassword,10)
+        await User.updateOne({_id},{
+            $set:{password}
+        })
+        res.json({status:"ok"})
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+exports.getChange=(req,res)=>{
+    res.sendFile(path.join(__dirname,"..","views","change-password.html"));
+
 }

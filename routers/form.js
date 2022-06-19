@@ -7,4 +7,6 @@ router.get("/register",controller.regForm);
 router.post("/api/register",controller.postForm);
 router.get("/login",controller.logForm);
 router.post("/api/login",controller.getForm);
+router.get("/change-password",controller.getChange);
+router.post("/api/change-password",controller.change);
 module.exports=router;
